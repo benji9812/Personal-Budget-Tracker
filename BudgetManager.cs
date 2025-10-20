@@ -113,17 +113,5 @@ namespace Perosnal_Budget_Tracker
             foreach (var tx in sorted) // Loop för att visa varje sorterad transaktion
                 tx.ShowInfo();
         }
-
-        public void ShowStatistics() // Method to display statistics about transactions
-        {
-            int count = transactions.Count; // Räkna antal transaktioner
-            decimal totalIncome = transactions.Where(t => t.Amount >= 0).Sum(t => t.Amount); // Summera alla inkomster
-            decimal totalExpense = transactions.Where(t => t.Amount < 0).Sum(t => t.Amount); // Summera alla utgifter
-
-            Console.WriteLine($"\nSTATISTIK:");
-            Console.WriteLine($"Antal transaktioner: {count}");
-            Console.WriteLine($"Total inkomst: {totalIncome} kr");
-            Console.WriteLine($"Total utgift: {totalExpense} kr");
-        }
     }
 }

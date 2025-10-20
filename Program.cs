@@ -60,9 +60,6 @@ namespace PersonalBudgetTracker
                         budgetManager.SortByDate();
                         break;
                     
-                    case "7": // Visa statistik
-                        budgetManager.ShowStatistics();
-                        break;
                     
                     case "8": // Ta bort transaktion
                         DeleteTransaction(budgetManager);
