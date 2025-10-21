@@ -15,6 +15,11 @@ En komplett C#-konsolapplikation för att hantera din privatekonomi. Programmet h
 - **Pedagogiskt menysystem**.
 - **All data hanteras i minnet via C#-Listor.**
 
+Om Spectre.Console
+I det här projektet används Spectre.Console – ett C#-bibliotek som gör konsolprogram både snyggare och mer användarvänliga. Med Spectre får menyer, tabeller och information färger och tydlig layout direkt i terminalen. Det gör det mycket enklare att läsa och navigera, speciellt när man vill visa statistik, kategorier och transaktionslistor med olika färger för inkomster och utgifter.
+
+Spectre.Console erbjuder smarta komponenter för interaktiva menyer, validerad input, samt möjlighet att markera text med färger och stilar. Man slipper råa texter och får snabbt ett program som känns proffsigt och tydligt även som ny kodare!
+
 ---
 
 ## Klassdiagram (UML)

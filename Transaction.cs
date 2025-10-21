@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Spectre.Console;
+using System;
 
 namespace Perosnal_Budget_Tracker
 {
@@ -13,15 +10,12 @@ namespace Perosnal_Budget_Tracker
         public string Category { get; set; }
         public string Date { get; set; }
 
-        public void ShowInfo()  // Method to display transaction info with color coding
+        // Visa info om transaktion, Spectre-markup med färg
+        public void ShowInfo()
         {
-            if (Amount < 0) // Red for expenses
-                Console.ForegroundColor = ConsoleColor.Red;
-            else // Green for income
-                Console.ForegroundColor = ConsoleColor.Green;
-
-            Console.WriteLine($"{Date}: {Description} | {Amount} kr | {Category}");
-            Console.ResetColor();
+            var color = Amount < 0 ? "red" : "green";
+            AnsiConsole.MarkupLine(
+                $"[grey]{Date}[/]: [bold]{Description}[/] | [{color}]{Amount}[/] kr | [blue]{Category}[/]");
         }
     }
 }

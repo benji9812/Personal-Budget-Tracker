@@ -1,129 +1,134 @@
-﻿using System;
+﻿using Spectre.Console;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perosnal_Budget_Tracker
 {
-    public class BudgetManager // Class to manage budget transactions
+    public class BudgetManager
     {
-        private List<Transaction> transactions = new(); // List to store transactions
+        private List<Transaction> transactions = new();
 
-        public void AddTransaction(Transaction tx) // Method to add a new transaction
+        public void AddTransaction(Transaction tx)
         {
-            transactions.Add(tx); // Lägg till transaktionen i listan
+            transactions.Add(tx);
         }
 
-        public void ShowAll() // Method to display all transactions
+        public void ShowAll()
         {
-            foreach (var tx in transactions) tx.ShowInfo(); // Visa alla transaktioner med färgkodning
-            
-            if (transactions.Count == 0) 
+            if (transactions.Count == 0)
             {
-                Console.WriteLine("Inga transaktioner registrerade.");
+                AnsiConsole.MarkupLine("[yellow]Inga transaktioner registrerade.[/]");
                 return;
             }
 
-            Console.WriteLine("\n--- Alla transaktioner ---"); // Rubrik
-            
+            var table = new Table().Border(TableBorder.Rounded)
+                .AddColumn("[bold]Nr[/]")
+                .AddColumn("[bold]Datum[/]")
+                .AddColumn("[bold]Beskrivning[/]")
+                .AddColumn("[bold]Belopp[/]")
+                .AddColumn("[bold]Kategori[/]");
+
             int count = 1;
-            
-            foreach (var tx in transactions) // Loop för att visa varje transaktion
+            foreach (var tx in transactions)
             {
-                Console.Write($"{count}. ");
-                tx.ShowInfo();   // Här används färginställningarna!
+                var color = tx.Amount < 0 ? "red" : "green";
+                table.AddRow($"{count}", $"{tx.Date}", $"{tx.Description}", $"[{color}]{tx.Amount}[/]", $"{tx.Category}");
                 count++;
             }
+
+            AnsiConsole.Write(table);
         }
 
-        public decimal CalculateBalance() // Method to calculate total balance
+        public decimal CalculateBalance()
         {
-            return transactions.Sum(t => t.Amount); // Summera alla transaktionsbelopp
+            return transactions.Sum(t => t.Amount);
         }
 
-        public void DeleteTransaction(int index) // Method to delete a transaction by index
+        public void DeleteTransaction(int index)
         {
-            if (index >= 0 && index < transactions.Count) // Kontrollera giltigt index
-                transactions.RemoveAt(index); // Ta bort transaktionen från listan
-        }
-
-        public void ShowByCategory() // Method to display transactions grouped by category
-        {
-            var grouped = transactions.GroupBy(t => t.Category); // Gruppera transaktioner efter kategori
-            
-            foreach (var group in grouped) // Loop för varje kategori
+            // Spectre-tabbeller använder 1-baserad, men kod från input är det också nu
+            if (index >= 1 && index <= transactions.Count)
             {
-                Console.WriteLine($"\nKategori: {group.Key}"); // Visa kategorinamn
-                
-                foreach (var tx in group) // Loop för varje transaktion i kategorin
+                transactions.RemoveAt(index - 1);
+                AnsiConsole.MarkupLine("[red]Transaktion borttagen![/]");
+            }
+            else
+                AnsiConsole.MarkupLine("[yellow]Index utanför gräns![/]");
+        }
+
+        public void ShowByCategory()
+        {
+            var grouped = transactions.GroupBy(t => t.Category);
+
+            foreach (var group in grouped)
+            {
+                AnsiConsole.MarkupLine($"\n[bold]{group.Key}[/]");
+                var table = new Table().AddColumn("Datum").AddColumn("Beskrivning").AddColumn("Belopp");
+                foreach (var tx in group)
                 {
-                    tx.ShowInfo(); // Visa
+                    var color = tx.Amount < 0 ? "red" : "green";
+                    table.AddRow($"{tx.Date}", $"{tx.Description}", $"[{color}]{tx.Amount}[/]");
                 }
+                AnsiConsole.Write(table);
             }
         }
-        public void DeleteByCategory() // Method to delete transactions by selected category
+
+        public void DeleteByCategory(string category)
         {
-            var categories = transactions.Select(t => t.Category).Distinct().ToList(); // Hämta unika kategorier
-            Console.WriteLine("Tillgängliga kategorier:");
-            
-            for (int i = 0; i < categories.Count; i++) // Loop för att visa kategorier med nummer
+            int countBefore = transactions.Count;
+            transactions.RemoveAll(t => t.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+            int countAfter = transactions.Count;
+            int deleted = countBefore - countAfter;
+
+            AnsiConsole.MarkupLine($"[red]{deleted} transaktion(er) i kategorin '{category}' har tagits bort.[/]");
+        }
+
+        public void FilterByCategory(string category)
+        {
+            var filtered = transactions.Where(t => t.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            AnsiConsole.MarkupLine($"\nTransaktioner i kategori '[bold]{category}[/]':");
+
+            if (filtered.Count == 0)
+                AnsiConsole.MarkupLine("[yellow]Inga transaktioner hittades.[/]");
+            else
             {
-                Console.WriteLine($"{i + 1}. {categories[i]}");
+                var table = new Table().AddColumn("Datum").AddColumn("Beskrivning").AddColumn("Belopp");
+                foreach (var tx in filtered)
+                {
+                    var color = tx.Amount < 0 ? "red" : "green";
+                    table.AddRow($"{tx.Date}", $"{tx.Description}", $"[{color}]{tx.Amount}[/]");
+                }
+                AnsiConsole.Write(table);
             }
-           
-            Console.Write("Ange numret på kategorin");
-            int choice; // Variabel för användarens val
-            
-            while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > categories.Count) // Validera inmatning
+            AnsiConsole.MarkupLine($"Totalt [bold]{filtered.Count}[/] transaktion(er) i kategorin '[bold]{category}[/]'.");
+        }
+
+        public void SortByDate()
+        {
+            var sorted = transactions.OrderBy(t => t.Date).ToList();
+            AnsiConsole.MarkupLine("\nTransaktioner sorterade efter datum:");
+            var table = new Table().AddColumn("Datum").AddColumn("Beskrivning").AddColumn("Belopp").AddColumn("Kategori");
+            foreach (var tx in sorted)
             {
-                Console.Write("Ogiltigt val. Försök igen: ");
+                var color = tx.Amount < 0 ? "red" : "green";
+                table.AddRow($"{tx.Date}", $"{tx.Description}", $"[{color}]{tx.Amount}[/]", $"{tx.Category}");
             }
-            
-            string selectedCategory = categories[choice - 1]; // Hämta vald kategori baserat på användarens val
-            
-            transactions.RemoveAll(t => t.Category == selectedCategory); // Ta bort alla transaktioner i den valda kategorin
-            Console.WriteLine($"Alla transaktioner i kategorin '{selectedCategory}' har tagits bort.");
-
-        }
-        public void DeleteByCategory(string category) // Overloaded method to delete transactions by specified category
-        {
-            transactions.RemoveAll(t => t.Category.Equals(category, StringComparison.OrdinalIgnoreCase)); // Ta bort alla transaktioner i den angivna kategorin
-            Console.WriteLine($"Alla transaktioner i kategorin '{category}' har tagits bort.");
+            AnsiConsole.Write(table);
         }
 
-        public void FilterByCategory(string category) // Method to filter and display transactions by category
+        public void ShowStatistics()
         {
-            var filtered = transactions.Where(t => t.Category.Equals(category, StringComparison.OrdinalIgnoreCase)); // Filtrera transaktioner baserat på kategori
-            Console.WriteLine($"\nTransaktioner i kategori '{category}':");
-           
-            foreach (var tx in filtered) // Loop för att visa varje filtrerad transaktion
-                tx.ShowInfo();   // Färg på raden beroende på belopp!
-            
-            if (!filtered.Any()) Console.WriteLine("Inga transaktioner hittades."); // Meddela om inga transaktioner hittades
-            
-            else Console.WriteLine($"Totalt {filtered.Count()} transaktion(er) i kategorin '{category}'."); // Visa antal transaktioner i kategorin
-        }
+            int count = transactions.Count;
+            decimal totalIncome = transactions.Where(t => t.Amount >= 0).Sum(t => t.Amount);
+            decimal totalExpense = transactions.Where(t => t.Amount < 0).Sum(t => t.Amount);
 
-        public void SortByDate() // Method to sort and display transactions by date
-        {
-            var sorted = transactions.OrderBy(t => t.Date); // Sortera transaktioner efter datum
-            Console.WriteLine("\nTransaktioner sorterade efter datum:");
-            
-            foreach (var tx in sorted) // Loop för att visa varje sorterad transaktion
-                tx.ShowInfo();
-        }
-
-        public void ShowStatistics() // Method to display statistics about transactions
-        {
-            int count = transactions.Count; // Räkna antal transaktioner
-            decimal totalIncome = transactions.Where(t => t.Amount >= 0).Sum(t => t.Amount); // Summera alla inkomster
-            decimal totalExpense = transactions.Where(t => t.Amount < 0).Sum(t => t.Amount); // Summera alla utgifter
-
-            Console.WriteLine($"\nSTATISTIK:");
-            Console.WriteLine($"Antal transaktioner: {count}");
-            Console.WriteLine($"Total inkomst: {totalIncome} kr");
-            Console.WriteLine($"Total utgift: {totalExpense} kr");
+            AnsiConsole.MarkupLine($"\n[bold]STATISTIK:[/]");
+            AnsiConsole.MarkupLine($"Antal transaktioner: [bold]{count}[/]");
+            AnsiConsole.MarkupLine($"Total inkomst: [green]{totalIncome}[/] kr");
+            AnsiConsole.MarkupLine($"Total utgift: [red]{totalExpense}[/] kr");
+            AnsiConsole.MarkupLine($"Netto: [bold]{totalIncome + totalExpense}[/] kr");
         }
     }
 }
+
