@@ -60,12 +60,14 @@ namespace PersonalBudgetTracker
                         budgetManager.SortByDate();
                         break;
                     
-                    case "7":
+                    case "7": // Visa statistik
                         budgetManager.ShowStatistics();
                         break;
 
                     case "8": // Ta bort transaktion
-                        DeleteTransaction(budgetManager);
+                        budgetManager.ShowAll(); // Visa alla transaktioner först
+                        int index = Convert.ToInt32(Console.ReadLine());
+                        budgetManager.DeleteTransaction(index);
                         break;
                     
                     case "9": // Ta bort transaktioner per kategori
@@ -74,11 +76,11 @@ namespace PersonalBudgetTracker
                         break;
                     
                     case "10": // Avsluta programmet
-                        running = false;
+                        running = false; 
                         Console.WriteLine("Avslutar programmet. Tack!");
                         break;
 
-                    default:
+                    default: // Ogiltigt val
                         Console.WriteLine("✗ Ogiltigt val. Ange 1-10.");
                         break;
                 }
@@ -116,24 +118,6 @@ namespace PersonalBudgetTracker
                 Date = date
             };
             budgetManager.AddTransaction(tx); // Lägg till transaktionen
-        }
-
-        // Metod för att ta bort transaktion
-        static void DeleteTransaction(BudgetManager budgetManager)
-        {
-            budgetManager.ShowAll(); // Visa alla transaktioner först
-            Console.Write("\nAnge postens nummer att ta bort: ");
-            
-            int index; // Index för transaktion
-
-            if (int.TryParse(Console.ReadLine(), out index)) // Validera inmatning
-            {
-                budgetManager.DeleteTransaction(index); // Ta bort transaktionen
-            }
-            else // Ogiltig inmatning
-            {
-                Console.WriteLine("✗ Ogiltigt nummer.");
-            }
         }
     }
 }
