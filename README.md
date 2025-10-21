@@ -35,7 +35,7 @@ Diagrammet visar de två huvudklasserna i programmet:
   Ansvarar för all logik som rör hantering av transaktioner:
   - List<Transaction>: lagrar alla poster.
   - Metoder: AddTransaction, ShowAll, CalculateBalance, DeleteTransaction, DeleteByCategory, ShowByCategory, FilterByCategory, SortByDate, ShowStatistics  
-  BudgetManager har en **aggregation** till Transaction (dvs. hanterar många Transaction-objekt).
+  BudgetManager har en **aggregation** (sammansättning av data) till Transaction (dvs. hanterar många Transaction-objekt).
 
 **Diagrammet visualiserar egenskaper och metodsignaturer tydligt, samt relationen och rollbeskrivning för varje klass.**
 
