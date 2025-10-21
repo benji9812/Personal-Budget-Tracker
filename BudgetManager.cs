@@ -5,16 +5,16 @@ using System.Linq;
 
 namespace Perosnal_Budget_Tracker
 {
-    public class BudgetManager
+    public class BudgetManager // Hanterar budget och transaktioner
     {
-        private List<Transaction> transactions = new();
+        private List<Transaction> transactions = new(); // Lista för att lagra transaktioner
 
-        public void AddTransaction(Transaction tx)
+        public void AddTransaction(Transaction tx) // Lägg till transaktion
         {
             transactions.Add(tx);
         }
 
-        public void ShowAll()
+        public void ShowAll() // Visa alla transaktioner
         {
             if (transactions.Count == 0)
             {
@@ -22,7 +22,7 @@ namespace Perosnal_Budget_Tracker
                 return;
             }
 
-            var table = new Table().Border(TableBorder.Rounded)
+            var table = new Table().Border(TableBorder.Rounded) // Skapa tabell med rundade kanter
                 .AddColumn("[bold]Nr[/]")
                 .AddColumn("[bold]Datum[/]")
                 .AddColumn("[bold]Beskrivning[/]")
@@ -40,12 +40,12 @@ namespace Perosnal_Budget_Tracker
             AnsiConsole.Write(table);
         }
 
-        public decimal CalculateBalance()
+        public decimal CalculateBalance() // Beräkna total balans
         {
             return transactions.Sum(t => t.Amount);
         }
 
-        public void DeleteTransaction(int index)
+        public void DeleteTransaction(int index) // Ta bort transaktion baserat på index
         {
             // Spectre-tabbeller använder 1-baserad, men kod från input är det också nu
             if (index >= 1 && index <= transactions.Count)
@@ -57,7 +57,7 @@ namespace Perosnal_Budget_Tracker
                 AnsiConsole.MarkupLine("[yellow]Index utanför gräns![/]");
         }
 
-        public void ShowByCategory()
+        public void ShowByCategory() // Visa transaktioner grupperade efter kategori
         {
             var grouped = transactions.GroupBy(t => t.Category);
 
@@ -74,7 +74,7 @@ namespace Perosnal_Budget_Tracker
             }
         }
 
-        public void DeleteByCategory(string category)
+        public void DeleteByCategory(string category) // Ta bort transaktioner baserat på kategori
         {
             int countBefore = transactions.Count;
             transactions.RemoveAll(t => t.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
@@ -84,7 +84,7 @@ namespace Perosnal_Budget_Tracker
             AnsiConsole.MarkupLine($"[red]{deleted} transaktion(er) i kategorin '{category}' har tagits bort.[/]");
         }
 
-        public void FilterByCategory(string category)
+        public void FilterByCategory(string category) // Filtrera transaktioner baserat på kategori
         {
             var filtered = transactions.Where(t => t.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
             AnsiConsole.MarkupLine($"\nTransaktioner i kategori '[bold]{category}[/]':");
@@ -104,7 +104,7 @@ namespace Perosnal_Budget_Tracker
             AnsiConsole.MarkupLine($"Totalt [bold]{filtered.Count}[/] transaktion(er) i kategorin '[bold]{category}[/]'.");
         }
 
-        public void SortByDate()
+        public void SortByDate() // Sortera transaktioner efter datum
         {
             var sorted = transactions.OrderBy(t => t.Date).ToList();
             AnsiConsole.MarkupLine("\nTransaktioner sorterade efter datum:");
@@ -117,7 +117,7 @@ namespace Perosnal_Budget_Tracker
             AnsiConsole.Write(table);
         }
 
-        public void ShowStatistics()
+        public void ShowStatistics() // Visa statistik om transaktioner
         {
             int count = transactions.Count;
             decimal totalIncome = transactions.Where(t => t.Amount >= 0).Sum(t => t.Amount);

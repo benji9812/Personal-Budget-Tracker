@@ -2,9 +2,9 @@
 using Spectre.Console;
 using System;
 
-class Program
+class Program // Huvudprogram
 {
-    static readonly string[] categories = new string[]
+    static readonly string[] categories = new string[] // Fördefinierade kategorier
     {
         "Lön",
         "Mat",
@@ -14,12 +14,12 @@ class Program
         "Övrigt"
     };
 
-    static void Main(string[] args)
+    static void Main(string[] args) // Huvudmetod
     {
-        BudgetManager budgetManager = new BudgetManager();
-        bool running = true;
+        BudgetManager budgetManager = new BudgetManager(); // Skapa instans av BudgetManager
+        bool running = true; // Huvudloop för menyn
 
-        while (running)
+        while (running) // Huvudmenyloop
         {
             AnsiConsole.Clear();
             AnsiConsole.Write(
@@ -44,22 +44,22 @@ class Program
                     })
             );
 
-            switch (choice)
+            switch (choice) // Hantera menyval
             {
-                case "Lägg till transaktion":
+                case "Lägg till transaktion": // Lägg till ny transaktion
                     AddTransaction(budgetManager);
                     break;
-                case "Visa alla transaktioner":
+                case "Visa alla transaktioner": // Visa alla transaktioner
                     budgetManager.ShowAll();
                     break;
-                case "Visa total balans":
+                case "Visa total balans": // Visa total balans
                     decimal balance = budgetManager.CalculateBalance();
                     AnsiConsole.MarkupLine($"\n[bold]Total balans:[/] [green]{balance}[/] kr");
                     break;
-                case "Visa transaktioner per kategori (Bonus)":
+                case "Visa transaktioner per kategori (Bonus)": // Visa per kategori
                     budgetManager.ShowByCategory();
                     break;
-                case "Filtrera efter kategori":
+                case "Filtrera efter kategori": // Filtrera per kategori
                     var filterCat = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("Välj kategori att filtrera")
@@ -67,18 +67,18 @@ class Program
                     );
                     budgetManager.FilterByCategory(filterCat);
                     break;
-                case "Sortera efter datum":
+                case "Sortera efter datum": // Sortera efter datum
                     budgetManager.SortByDate();
                     break;
-                case "Visa statistik":
+                case "Visa statistik": // Visa statistik
                     budgetManager.ShowStatistics();
                     break;
-                case "Ta bort transaktion":
+                case "Ta bort transaktion": // Ta bort en transaktion
                     budgetManager.ShowAll();
                     int index = AnsiConsole.Ask<int>("Ange numret för transaktionen att ta bort:");
                     budgetManager.DeleteTransaction(index);
                     break;
-                case "Ta bort transaktioner per kategori (Bonus)":
+                case "Ta bort transaktioner per kategori (Bonus)": // Ta bort per kategori
                     var deleteCat = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("Välj kategori att ta bort:")
@@ -87,18 +87,18 @@ class Program
                     budgetManager.DeleteByCategory(deleteCat);
                     AnsiConsole.MarkupLine("[red]Alla transaktioner i vald kategori har tagits bort.[/]");
                     break;
-                case "Avsluta":
+                case "Avsluta": // Avsluta programmet
                     running = false;
                     AnsiConsole.MarkupLine("[bold green]Avslutar programmet. Tack![/]");
                     break;
             }
 
-            if (running) AnsiConsole.MarkupLine("\n[grey]Tryck valfri tangent för att återgå till menyn...[/]");
-            if (running) Console.ReadKey();
+            if (running) AnsiConsole.MarkupLine("\n[grey]Tryck valfri tangent för att återgå till menyn...[/]"); // Vänta på användarens input innan nästa loop
+            if (running) Console.ReadKey(); // Vänta på tangenttryckning
         }
     }
 
-    static void AddTransaction(BudgetManager budgetManager)
+    static void AddTransaction(BudgetManager budgetManager) // Lägg till transaktion
     {
         string typ = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
@@ -118,8 +118,8 @@ class Program
         if (typ == "Utgift")
             amount = -Math.Abs(amount);
 
-        Transaction tx = new Transaction
-            {
+        Transaction tx = new Transaction // Skapa ny transaktion
+        {
             Description = description,
             Amount = amount,
             Category = category,
