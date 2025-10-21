@@ -1,139 +1,131 @@
 ﻿using Perosnal_Budget_Tracker;
+using Spectre.Console;
+using System;
 
-namespace PersonalBudgetTracker
+class Program
 {
-    class Program
+    static readonly string[] categories = new string[]
     {
-        static void Main(string[] args) // Huvudmetod
+        "Lön",
+        "Mat",
+        "Transport",
+        "Hyra",
+        "Nöje",
+        "Övrigt"
+    };
+
+    static void Main(string[] args)
+    {
+        BudgetManager budgetManager = new BudgetManager();
+        bool running = true;
+
+        while (running)
         {
-            // Skapa BudgetManager-instans
-            BudgetManager budgetManager = new BudgetManager(); // Hanterar transaktioner
-            bool running = true; // Kontrollvariabel för meny-loop
+            AnsiConsole.Clear();
+            AnsiConsole.Write(
+                new Panel("[bold yellow]PERSONAL BUDGET TRACKER[/]") { Padding = new Padding(1, 1) });
 
-            // Meny-loop
-            while (running) // Huvudmeny
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[cyan]Välj ett alternativ:[/]")
+                    .PageSize(10)
+                    .AddChoices(new[]
+                    {
+                        "Lägg till transaktion",
+                        "Visa alla transaktioner",
+                        "Visa total balans",
+                        "Visa transaktioner per kategori (Bonus)",
+                        "Filtrera efter kategori",
+                        "Sortera efter datum",
+                        "Visa statistik",
+                        "Ta bort transaktion",
+                        "Ta bort transaktioner per kategori (Bonus)",
+                        "Avsluta"
+                    })
+            );
+
+            switch (choice)
             {
-                Console.WriteLine("\n╔══════════════════════════╗");
-                Console.WriteLine("║ PERSONAL BUDGET TRACKER ║");
-                Console.WriteLine("╚══════════════════════════╝");
-                Console.WriteLine("1. Lägg till transaktion");
-                Console.WriteLine("2. Visa alla transaktioner");
-                Console.WriteLine("3. Visa total balans");
-                Console.WriteLine("4. Visa transaktioner per kategori (Bonus)");
-                Console.WriteLine("5. Filtrera efter kategori");
-                Console.WriteLine("6. Sortera efter datum");
-                Console.WriteLine("7. Visa statistik");
-                Console.WriteLine("8. Ta bort transaktion");
-                Console.WriteLine("9. Ta bort transaktioner per kategori (Bonus)");
-                Console.WriteLine("10. Avsluta");
-                Console.Write("Välj ett alternativ (1-10): ");
-                
-
-                string choice = Console.ReadLine(); // Läs användarens val
-
-                switch (choice) // Hantera menyval
-                {
-                    case "1": // Lägg till transaktion
-                        AddTransaction(budgetManager);
-                        break;
-                    
-                    case "2": // Visa alla transaktioner
-                        budgetManager.ShowAll();
-                        break;
-                    
-                    case "3": // Visa total balans
-                        decimal balance = budgetManager.CalculateBalance();
-                        Console.WriteLine($"\nTotal balans: {balance} kr");
-                        break;
-                   
-                    case "4": // Visa transaktioner per kategori
-                        budgetManager.ShowByCategory();
-                        break;
-                    
-                    case "5": // Filtrera efter kategori
-                        Console.Write("Ange kategori att filtrera: ");
-                        string category = Console.ReadLine(); // Kategori som sträng
-                        budgetManager.FilterByCategory(category); // Filtrera transaktioner
-                        break;
-                    
-                    case "6": // Sortera efter datum
-                        budgetManager.SortByDate();
-                        break;
-                    
-                    case "7":
-                        budgetManager.ShowStatistics();
-                        break;
-
-                    case "8": // Ta bort transaktion
-                        DeleteTransaction(budgetManager);
-                        break;
-                    
-                    case "9": // Ta bort transaktioner per kategori
-                        budgetManager.DeleteByCategory();
-                        Console.WriteLine("Alla transaktioner i vald kategori har tagits bort.");
-                        break;
-                    
-                    case "10": // Avsluta programmet
-                        running = false;
-                        Console.WriteLine("Avslutar programmet. Tack!");
-                        break;
-
-                    default:
-                        Console.WriteLine("✗ Ogiltigt val. Ange 1-10.");
-                        break;
-                }
+                case "Lägg till transaktion":
+                    AddTransaction(budgetManager);
+                    break;
+                case "Visa alla transaktioner":
+                    budgetManager.ShowAll();
+                    break;
+                case "Visa total balans":
+                    decimal balance = budgetManager.CalculateBalance();
+                    AnsiConsole.MarkupLine($"\n[bold]Total balans:[/] [green]{balance}[/] kr");
+                    break;
+                case "Visa transaktioner per kategori (Bonus)":
+                    budgetManager.ShowByCategory();
+                    break;
+                case "Filtrera efter kategori":
+                    var filterCat = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Välj kategori att filtrera")
+                            .AddChoices(categories)
+                    );
+                    budgetManager.FilterByCategory(filterCat);
+                    break;
+                case "Sortera efter datum":
+                    budgetManager.SortByDate();
+                    break;
+                case "Visa statistik":
+                    budgetManager.ShowStatistics();
+                    break;
+                case "Ta bort transaktion":
+                    budgetManager.ShowAll();
+                    int index = AnsiConsole.Ask<int>("Ange numret för transaktionen att ta bort:");
+                    budgetManager.DeleteTransaction(index);
+                    break;
+                case "Ta bort transaktioner per kategori (Bonus)":
+                    var deleteCat = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Välj kategori att ta bort:")
+                            .AddChoices(categories)
+                    );
+                    budgetManager.DeleteByCategory(deleteCat);
+                    AnsiConsole.MarkupLine("[red]Alla transaktioner i vald kategori har tagits bort.[/]");
+                    break;
+                case "Avsluta":
+                    running = false;
+                    AnsiConsole.MarkupLine("[bold green]Avslutar programmet. Tack![/]");
+                    break;
             }
+
+            if (running) AnsiConsole.MarkupLine("\n[grey]Tryck valfri tangent för att återgå till menyn...[/]");
+            if (running) Console.ReadKey();
         }
+    }
 
-        // Metod för att lägga till ny transaktion
-        static void AddTransaction(BudgetManager budgetManager)
-        {
-            Console.Write("\nBeskrivning: ");
-            string description = Console.ReadLine(); // Beskrivning som sträng
+    static void AddTransaction(BudgetManager budgetManager)
+    {
+        string typ = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Typ av transaktion")
+                .AddChoices("Inkomst", "Utgift"));
 
-            decimal amount; // Belopp som decimal
+        string description = AnsiConsole.Ask<string>("[yellow]Beskrivning:[/]");
+        decimal amount = AnsiConsole.Ask<decimal>("[yellow]Belopp (positivt):[/]");
 
-            Console.Write("Belopp (positivt = inkomst, negativt = utgift): ");
-           
-            while (!decimal.TryParse(Console.ReadLine(), out amount)) // Validera inmatning
+        string category = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Välj kategori")
+                .AddChoices(categories));
+
+        string date = AnsiConsole.Ask<string>("Datum (t.ex. 2025-10-10):");
+
+        if (typ == "Utgift")
+            amount = -Math.Abs(amount);
+
+        Transaction tx = new Transaction
             {
-                Console.Write("Ogiltigt belopp! Ange ett numeriskt värde: ");
-            }
-
-
-            Console.Write("Kategori: ");
-            string category = Console.ReadLine(); // Kategori som sträng
-
-            Console.Write("Datum (t.ex. 2025-10-10): ");
-            string date = Console.ReadLine(); // Datum som sträng
-
-            // Skapa och lägg till Transaction
-            Transaction tx = new Transaction
-            {
-                Description = description,
-                Amount = amount,
-                Category = category,
-                Date = date
-            };
-            budgetManager.AddTransaction(tx); // Lägg till transaktionen
-        }
-
-        // Metod för att ta bort transaktion
-        static void DeleteTransaction(BudgetManager budgetManager)
-        {
-            budgetManager.ShowAll(); // Visa alla transaktioner först
-            Console.Write("\nAnge postens nummer att ta bort: ");
-            
-            int index; // Index för transaktion
-
-            if (int.TryParse(Console.ReadLine(), out index)) // Validera inmatning
-            {
-                budgetManager.DeleteTransaction(index); // Ta bort transaktionen
-            }
-            else // Ogiltig inmatning
-            {
-                Console.WriteLine("✗ Ogiltigt nummer.");
-            }
-        }
+            Description = description,
+            Amount = amount,
+            Category = category,
+            Date = date
+        };
+        budgetManager.AddTransaction(tx);
+        AnsiConsole.MarkupLine("[green]Transaktion tillagd![/]");
     }
 }
