@@ -3,7 +3,7 @@ using System;
 
 namespace Perosnal_Budget_Tracker
 {
-    public class Transaction // Class to represent a financial transaction
+    public class Transaction // Representerar en enskild transaktion
     {
         public string Description { get; set; }
         public decimal Amount { get; set; }
